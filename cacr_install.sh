@@ -406,6 +406,97 @@ verify_installation() {
 
 }
 
+###############################################################
+# RECOMPILATION HELPER FUNCTIONS
+###############################################################
+
+clean_source() {
+
+    echo
+    echo "Checking Quantum ESPRESSO source..."
+
+    if [ ! -d "$QE_DIR" ]; then
+
+        echo
+        echo "ERROR : Quantum ESPRESSO source directory not found."
+        echo
+
+        return 1
+
+    fi
+
+    cd "$QE_DIR"
+
+    echo
+    echo "Source directory found."
+    echo
+
+    echo "Choose recompilation mode:"
+    echo
+    echo "1. Incremental rebuild (Faster)"
+    echo "2. Clean rebuild (Recommended)"
+    echo
+
+    read -p "Enter your choice : " rebuild
+
+    case $rebuild in
+
+        1)
+
+            echo
+            echo "Incremental rebuild selected."
+
+            ;;
+
+        2)
+
+            echo
+            echo "Running make veryclean..."
+
+            make veryclean
+
+            ;;
+
+        *)
+
+            echo
+            echo "Invalid choice."
+
+            return 1
+
+            ;;
+
+    esac
+
+}
+
+compile_engine() {
+
+    echo
+    echo "Configuring Quantum ESPRESSO..."
+
+    ./configure > "$LOG_DIR/configure.log" 2>&1
+
+    echo
+    echo "Compiling Quantum ESPRESSO..."
+
+    make -j$(nproc) pwall > "$LOG_DIR/compile.log" 2>&1
+
+    echo
+    echo "Compilation finished."
+
+}
+
+verify_recompile() {
+
+    echo
+    echo "Verifying executables..."
+    echo
+
+    verify_qe
+
+}
+
 ############################
 # OPTION 4
 ############################
@@ -415,10 +506,35 @@ recompile_qe() {
     print_header
 
     echo
-    echo "Recompile Quantum ESPRESSO"
-    echo
+    echo "=============================================================="
+    echo "             Quantum ESPRESSO Recompilation"
+    echo "=============================================================="
 
-    echo "Recompile module will be added in Commit 4."
+    clean_source || {
+
+        pause
+        return
+
+    }
+
+    compile_engine
+
+    verify_recompile
+
+    echo
+    echo "=============================================================="
+
+    if [ -f "$QE_DIR/bin/pw.x" ]; then
+
+        echo -e "${GREEN}Recompilation completed successfully.${NC}"
+
+    else
+
+        echo -e "${RED}Recompilation failed.${NC}"
+
+    fi
+
+    echo "=============================================================="
 
     pause
 
