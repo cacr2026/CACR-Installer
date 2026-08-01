@@ -261,6 +261,108 @@ install_qe_thermopw() {
     pause
 
 }
+###############################################################
+# VERIFICATION HELPER FUNCTIONS
+###############################################################
+
+pass() {
+
+    printf "${GREEN}%-30s PASS${NC}\n" "$1"
+
+}
+
+fail() {
+
+    printf "${RED}%-30s FAIL${NC}\n" "$1"
+
+}
+
+info() {
+
+    printf "${CYAN}%-30s %s${NC}\n" "$1" "$2"
+
+}
+
+verify_os() {
+
+    echo
+    echo "Operating System"
+    echo "--------------------------------------------------------------"
+
+    if grep -q Ubuntu /etc/os-release ; then
+        VERSION=$(grep VERSION_ID /etc/os-release | cut -d'"' -f2)
+        info "Ubuntu Version :" "$VERSION"
+    else
+        fail "Ubuntu"
+    fi
+
+}
+
+verify_hardware() {
+
+    echo
+    echo "Hardware"
+    echo "--------------------------------------------------------------"
+
+    info "CPU :" "$(lscpu | grep 'Model name' | cut -d: -f2 | xargs)"
+    info "CPU Threads :" "$(nproc)"
+    info "Installed RAM :" "$(free -h | awk '/Mem:/ {print $2}')"
+    info "Free Disk :" "$(df -h "$HOME" | awk 'NR==2 {print $4}')"
+
+}
+
+verify_compilers() {
+
+    echo
+    echo "Development Tools"
+    echo "--------------------------------------------------------------"
+
+    command -v gcc >/dev/null && info "GCC :" "$(gcc -dumpversion)" || fail "GCC"
+
+    command -v gfortran >/dev/null && info "GFortran :" "$(gfortran -dumpversion)" || fail "GFortran"
+
+    command -v mpirun >/dev/null && \
+        info "MPI :" "$(mpirun --version | head -1)" || \
+        fail "MPI"
+
+}
+
+verify_libraries() {
+
+    echo
+    echo "Scientific Libraries"
+    echo "--------------------------------------------------------------"
+
+    ldconfig -p | grep -q openblas && pass "OpenBLAS" || fail "OpenBLAS"
+
+    ldconfig -p | grep -q lapack && pass "LAPACK" || fail "LAPACK"
+
+    ldconfig -p | grep -q fftw3 && pass "FFTW3" || fail "FFTW3"
+
+}
+
+verify_qe() {
+
+    echo
+    echo "Quantum ESPRESSO"
+    echo "--------------------------------------------------------------"
+
+    [ -d "$QE_DIR" ] && pass "Source Directory" || fail "Source Directory"
+
+    [ -f "$LOG_DIR/configure.log" ] && pass "configure.log" || fail "configure.log"
+
+    [ -f "$LOG_DIR/compile.log" ] && pass "compile.log" || fail "compile.log"
+
+    cd "$QE_DIR" 2>/dev/null || return
+
+    for exe in pw.x ph.x bands.x dos.x projwfc.x
+    do
+
+        [ -f "bin/$exe" ] && pass "$exe" || fail "$exe"
+
+    done
+
+}
 
 ############################
 # OPTION 3
@@ -271,10 +373,34 @@ verify_installation() {
     print_header
 
     echo
-    echo "Installation Verification"
-    echo
+    echo "=============================================================="
+    echo "              CACR System Verification"
+    echo "=============================================================="
 
-    echo "Verification module will be added in Commit 3."
+    verify_os
+
+    verify_hardware
+
+    verify_compilers
+
+    verify_libraries
+
+    verify_qe
+
+    echo
+    echo "=============================================================="
+
+    if [ -f "$QE_DIR/bin/pw.x" ]; then
+
+        echo -e "${GREEN}SYSTEM STATUS : READY${NC}"
+
+    else
+
+        echo -e "${RED}SYSTEM STATUS : INCOMPLETE${NC}"
+
+    fi
+
+    echo "=============================================================="
 
     pause
 
