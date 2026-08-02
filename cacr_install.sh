@@ -1,4 +1,5 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ###############################################################################
 # CACR Materials Characterization Platform
 # Installer Version 2.0a
@@ -66,23 +67,22 @@ check_system() {
     grep -q Ubuntu /etc/os-release || {
         echo
         echo "ERROR : Ubuntu not detected."
-        exit 1
+return 1
     }
 
     echo "Ubuntu : PASS"
 
     echo
-    echo "[2/6] Checking internet connection..."
+echo "[2/6] Checking GitHub connectivity..."
 
-    ping -c1 github.com >/dev/null 2>&1 || \
-    ping -c1 google.com >/dev/null 2>&1 || {
+git ls-remote https://github.com/QEF/q-e.git >/dev/null 2>&1 || {
 
-        echo
-        echo "ERROR : Internet connection unavailable."
-        exit 1
-    }
+    echo
+    echo "ERROR : Unable to access GitHub."
+    return 1
+}
 
-    echo "Internet : PASS"
+echo "GitHub : PASS"
 
     echo
     echo "[3/6] Checking sudo access..."
@@ -211,7 +211,27 @@ verify_qe() {
 ############################
 # OPTION 1
 ############################
+############################################################
+# INSTALL QUANTUM ESPRESSO CORE
+############################################################
 
+install_qe_core() {
+
+    check_system || return 1
+
+    install_dependencies || return 1
+
+    download_qe || return 1
+
+    configure_qe || return 1
+
+    compile_qe || return 1
+
+    verify_qe || return 1
+
+    return 0
+
+}
 install_qe() {
 
     print_header
@@ -222,17 +242,7 @@ install_qe() {
     echo "=============================================================="
     echo
 
-    check_system
-
-    install_dependencies
-
-    download_qe
-
-    configure_qe
-
-    compile_qe
-
-    verify_qe
+    install_qe_core
 
     echo
     echo "=============================================================="
@@ -253,13 +263,28 @@ install_qe_thermopw() {
     print_header
 
     echo
-    echo "Quantum ESPRESSO + ThermoPW"
+    echo "Quantum ESPRESSO + ThermoPW Installation"
     echo
-    echo "ThermoPW will be added in Release 2.0b."
+
+    echo "Step 1 of 2 : Installing Quantum ESPRESSO..."
     echo
+
+    install_qe
+
+    if [ $? -ne 0 ]; then
+        echo
+        echo "Quantum ESPRESSO installation failed."
+        pause
+        return 1
+    fi
+
+    echo
+    echo "Step 2 of 2 : Installing ThermoPW..."
+    echo
+
+    bash "$SCRIPT_DIR/modules/thermopw_install.sh"
 
     pause
-
 }
 ###############################################################
 # VERIFICATION HELPER FUNCTIONS
@@ -559,7 +584,9 @@ echo "3. Verify Existing Installation"
 echo
 echo "4. Recompile Quantum ESPRESSO"
 echo
-echo "5. Exit"
+echo "5. CACR Research Studio"
+echo
+echo "6. Exit"
 
 echo
 read -p "Enter your choice : " choice
@@ -583,13 +610,14 @@ recompile_qe
 ;;
 
 5)
+    bash "$SCRIPT_DIR/modules/research_studio.sh"
+    ;;
 
-echo
-echo "Thank you for using CACR Installer."
-echo
-
-exit 0
-;;
+6)
+    echo
+    echo "Thank you for using CACR Research Platform."
+    exit 0
+    ;;
 
 *)
 

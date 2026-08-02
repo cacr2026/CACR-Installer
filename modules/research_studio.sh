@@ -11,19 +11,22 @@ clear
 
 echo "=============================================================="
 echo "                 CACR Research Studio"
-echo "                     Version $VERSION"
+echo "                Technology Preview"
+echo "                    Version 2.0a"
 echo "=============================================================="
 echo
-echo "Available Modules"
+
+echo "Available Research Modules"
 echo
-echo " 1. SCF Convergence Assistant"
-echo " 2. Structural Optimization"
-echo " 3. Mechanical Properties"
-echo " 4. Electronic Properties"
-echo " 5. Optical Properties"
-echo " 6. Thermal Properties"
+
+echo " 1. SCF Convergence Assistant        (Preview)"
+echo " 2. Structural Optimization          (Coming in v2.1)"
+echo " 3. Mechanical Properties            (Coming in v2.2)"
+echo " 4. Electronic Properties            (Coming in v2.2)"
+echo " 5. Optical Properties               (Coming in v2.3)"
+echo " 6. Thermal Properties               (Coming in v2.3)"
 echo
-echo " 0. Exit"
+echo " 0. Return to Main Menu"
 echo
 
 read -p "Select Module : " module
@@ -41,12 +44,21 @@ echo "=============================================================="
 echo "           SCF Convergence Assistant"
 echo "=============================================================="
 echo
-echo "Official Quantum ESPRESSO Examples"
+echo "Research Workflows"
 echo
-echo "1. Silicon (SCF)"
-echo "2. Silicon (Relax)"
-echo "3. Silicon (Band Structure)"
-echo "4. Silicon (Density of States)"
+
+echo "1. Silicon Crystal (SCF)            [Preview]"
+echo "2. Silicon Crystal (Relax)          [Coming in v2.1]"
+echo "3. Band Structure Analysis          [Coming in v2.2]"
+echo "4. Density of States (DOS)          [Coming in v2.2]"
+echo
+echo "Future Modules"
+echo
+echo "5. Mechanical Properties            [Coming in v2.3]"
+echo "6. Optical Properties               [Coming in v2.3]"
+echo "7. Thermal Properties               [Coming in v2.3]"
+echo
+echo "0. Back"
 echo
 echo "0. Back"
 echo
