@@ -32,12 +32,60 @@ case $module in
 
 1)
 
+while true
+do
+
+clear
+
+echo "=============================================================="
+echo "           SCF Convergence Assistant"
+echo "=============================================================="
 echo
-echo "SCF Convergence Assistant"
+echo "Official Quantum ESPRESSO Examples"
 echo
-echo "This module will be implemented next."
+echo "1. Silicon (SCF)"
+echo "2. Silicon (Relax)"
+echo "3. Silicon (Band Structure)"
+echo "4. Silicon (Density of States)"
+echo
+echo "0. Back"
+echo
+
+read -p "Select Example : " example
+
+case $example in
+
+1)
+
+echo
+echo "Silicon SCF selected."
 echo
 read -p "Press ENTER to continue..."
+;;
+
+2|3|4)
+
+echo
+echo "This example will be available soon."
+echo
+read -p "Press ENTER to continue..."
+;;
+
+0)
+
+break
+;;
+
+*)
+
+echo
+echo "Invalid selection."
+sleep 2
+;;
+
+esac
+
+done
 ;;
 
 2|3|4|5|6)
