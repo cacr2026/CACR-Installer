@@ -3,33 +3,40 @@
 source "$(dirname "$0")/common.sh"
 
 THERMOPW_VERSION="2.1.1"
+QE_DIR="$HOME/CACR/software/qe-7.5"
+THERMOPW_DIR="$QE_DIR/thermo_pw"
 
 print_header
 
 echo
 info "ThermoPW Installation Module"
 echo
-
 echo "Version : $THERMOPW_VERSION"
 echo
 
-echo "Checking Quantum ESPRESSO installation..."
+############################################################
+# Check Quantum ESPRESSO
+############################################################
 
-QE_DIR="$HOME/CACR/software/qe-7.5"
+info "Checking Quantum ESPRESSO installation..."
 
-if [ -d "$QE_DIR" ]; then
+if [ ! -d "$QE_DIR" ]; then
+    error "Quantum ESPRESSO installation not found."
+    pause
+    exit 1
+fi
 
-    success "Quantum ESPRESSO detected."
+success "Quantum ESPRESSO detected."
+echo "Location : $QE_DIR"
 echo
+
+############################################################
+# Check / Download ThermoPW
+############################################################
+
 info "Checking ThermoPW..."
 
-THERMOPW_DIR="$QE_DIR/thermo_pw"
-
-if [ -d "$THERMOPW_DIR" ]; then
-
-    success "ThermoPW already exists."
-
-else
+if [ ! -d "$THERMOPW_DIR" ]; then
 
     info "Downloading ThermoPW..."
 
@@ -37,34 +44,39 @@ else
 
     git clone https://github.com/dalcorso/thermo_pw.git
 
-    if [ $? -eq 0 ]; then
-
-        success "ThermoPW downloaded successfully."
-
-    else
-
+    if [ $? -ne 0 ]; then
         error "Failed to download ThermoPW."
-
         pause
-
         exit 1
-
     fi
 
-fi
-    echo
-    echo "Location : $QE_DIR"
+    success "ThermoPW downloaded successfully."
 
 else
 
-    error "Quantum ESPRESSO installation not found."
-
-    pause
-
-    exit 1
+    success "ThermoPW already exists."
 
 fi
 
 echo
 
+############################################################
+# Integrate with QE
+############################################################
+
+info "Integrating ThermoPW with Quantum ESPRESSO..."
+
+cd "$THERMOPW_DIR" || exit 1
+
+make join_qe
+
+if [ $? -eq 0 ]; then
+    success "ThermoPW integrated successfully."
+else
+    error "ThermoPW integration failed."
+    pause
+    exit 1
+fi
+
+echo
 pause
