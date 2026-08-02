@@ -69,7 +69,51 @@ info "Integrating ThermoPW with Quantum ESPRESSO..."
 cd "$THERMOPW_DIR" || exit 1
 
 make join_qe
+echo
+info "Configuring Quantum ESPRESSO..."
 
+cd "$QE_DIR" || exit 1
+
+./configure
+
+if [ $? -eq 0 ]; then
+
+    success "Configuration completed successfully."
+echo
+info "Compiling ThermoPW..."
+
+CORES=$(nproc)
+
+echo "Using $CORES CPU cores..."
+
+make thermo_pw -j"$CORES"
+
+if [ $? -eq 0 ]; then
+
+    success "ThermoPW compiled successfully."
+
+else
+
+    error "ThermoPW compilation failed."
+
+    pause
+
+    exit 1
+
+fi
+
+echo
+else
+
+    error "Configuration failed."
+
+    pause
+
+    exit 1
+
+fi
+
+echo
 if [ $? -eq 0 ]; then
     success "ThermoPW integrated successfully."
 else
